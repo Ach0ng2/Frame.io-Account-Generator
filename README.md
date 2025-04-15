@@ -34,7 +34,7 @@ Before running the script, please ensure you have the following installed on you
 To run the script, execute the following command in your terminal:
 
 ```bash
-python FIAG_v1.0.py 
+python .\Frame.io-Account-Generator\FIAG_v1.0.py 
 ```
 
 When you run the script, it will perform these actions:
