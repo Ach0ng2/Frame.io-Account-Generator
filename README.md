@@ -18,8 +18,8 @@ Before running the script, please ensure you have the following installed on you
 1. **Clone the Repository:**
 
    ```bash
-   git clone https://github.com/yourusername/your-repo-name.git
-   cd your-repo-name
+   git clone https://github.com/Ach0ng2/Frame.io-Account-Generator
+   Frame.io-Account-Generator
    ```
 
 2. **Install Python Dependencies:**
@@ -44,7 +44,7 @@ Before running the script, please ensure you have the following installed on you
 To run the script, execute the following command in your terminal:
 
 ```bash
-python frameio_account_generator(1).py
+python FIAG_v1.0.py 
 ```
 
 When you run the script, it will perform these actions:
