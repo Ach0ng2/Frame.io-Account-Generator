@@ -1,9 +1,12 @@
 import random
 import time
 import traceback
+import os
+import subprocess
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
@@ -12,7 +15,11 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException
 options = Options()
 options.add_argument("--start-maximized")
 options.add_experimental_option("detach", True)  # Keep browser open when script finishes/crashes
-driver = webdriver.Chrome(options=options)
+
+# (Optional) Redirect ChromeDriver logs to /dev/null to hide SSL errors (or "nul" on Windows)
+service = Service(log_path="/dev/null")
+driver = webdriver.Chrome(service=service, options=options)
+
 wait = WebDriverWait(driver, 20)  # Increased wait time to 20 seconds
 
 # Function to safely find and fill a field
@@ -99,7 +106,7 @@ try:
             var buttons = document.querySelectorAll('button[type="submit"]');
             if(buttons.length > 0) buttons[0].click();
         """)
-    
+
     # STEP 4: Main signup form - Wait longer to ensure page loads
     print("Waiting for main signup form...")
     time.sleep(5)  # Give more time for the page to fully load
@@ -147,7 +154,6 @@ try:
     
     # Try to submit the form
     print("Attempting to click 'Sign up' button...")
-
     try:
         # Primary method - wait for and click using data-testid
         button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-testid='signup-button']")))
@@ -157,7 +163,7 @@ try:
         # Fallback method - click using submit type
         print("Trying fallback method")
         driver.execute_script("""
-            document.querySelector('button[type=\"submit\"]').click();
+            document.querySelector('button[type="submit"]').click();
         """)
         print("Executed fallback click")
     
@@ -173,7 +179,6 @@ try:
         try:
             # Locate all rows in the email table
             email_rows = driver.find_elements(By.CSS_SELECTOR, "tr.hidden-xs.hidden-sm.klikaciRadek.newMail")
-            
             # Check each row for matching text
             for row in email_rows:
                 row_text = row.text.lower()
@@ -182,7 +187,6 @@ try:
                     row.click()  # Click the email row
                     email_opened = True
                     break
-            
             if email_opened:
                 break
             else:
@@ -195,6 +199,82 @@ try:
     if not email_opened:
         raise Exception("Email from Frame.io not found within the retry limit.")
 
+    # STEP 6: Click Confirm Email button
+    print("Attempting to click 'Confirm Email' button...")
+    # 6a) Wait for the iframe that contains the email body
+    try:
+        email_iframe = wait.until(EC.presence_of_element_located((
+            By.CSS_SELECTOR, "iframe#iframeMail, iframe.emailFrame"
+        )))
+        driver.switch_to.frame(email_iframe)
+        print("✅ Switched into email iframe")
+    except TimeoutException:
+        print("❌ Timeout: email iframe not found")
+        raise
+
+    # 6b) Inside the iframe, try to click the link by text first
+    try:
+        confirm_link = wait.until(
+            EC.element_to_be_clickable((By.LINK_TEXT, "Confirm Email"))
+        )
+        confirm_link.click()
+        print("✅ Clicked 'Confirm Email' via LINK_TEXT")
+    except TimeoutException:
+        print("❌ Link not found by LINK_TEXT, trying CSS selector...")
+        # Try CSS selector
+        try:
+            confirm_link = wait.until(
+                EC.element_to_be_clickable((
+                    By.CSS_SELECTOR,
+                    "td[bgcolor='#5b53ff'] a[href*='confirm-email-link']"
+                ))
+            )
+            confirm_link.click()
+            print("✅ Clicked 'Confirm Email' via CSS selector")
+        except TimeoutException:
+            print("❌ Link not found by CSS selector, trying JavaScript fallback...")
+            # JavaScript fallback
+            try:
+                clicked = driver.execute_script("""
+                    const link = document.querySelector("td[bgcolor='#5b53ff'] a[href*='confirm-email-link']");
+                    if (link) { link.click(); return true; }
+                    return false;
+                """)
+                if clicked:
+                    print("✅ Clicked 'Confirm Email' via JavaScript")
+                else:
+                    print("❌ 'Confirm Email' link not found via JavaScript")
+            except Exception as e:
+                print(f"❌ JS fallback failed: {e}")
+
+    # 6c) Switch back to the main document so further steps (if any) work
+    driver.switch_to.default_content()
+    print("✅ Switched back to main document")
+
+    # STEP 7: Click Continue button
+    print("Attempting to click 'Continue' button...")
+    try:
+        # Adjust the selector as needed if the element is not a button
+        continue_button = wait.until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, "div.flex-x9ump0-0.Button__ChildrenWrapper-tzx5l-1.cbDFCh"))
+        )
+        continue_button.click()
+        print("✅ Clicked 'Continue' button")
+    except TimeoutException:
+        print("❌ Timeout: 'Continue' button not found via CSS selector, trying JS fallback...")
+        try:
+            clicked = driver.execute_script("""
+                const btns = Array.from(document.querySelectorAll('div'));
+                const btn = btns.find(el => el.className.includes('Button__ChildrenWrapper') && el.textContent.trim() === 'Continue');
+                if (btn) { btn.click(); return true; }
+                return false;
+            """)
+            if clicked:
+                print("✅ Clicked 'Continue' button via JavaScript fallback")
+            else:
+                print("❌ 'Continue' button not found via JavaScript fallback")
+        except Exception as e:
+            print(f"❌ JS fallback for 'Continue' button failed: {e}")
 
     print("\n✅ Email confirmation process completed successfully.")
     
