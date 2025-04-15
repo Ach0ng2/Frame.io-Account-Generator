@@ -26,7 +26,7 @@ Before running the script, please ensure you have the following installed on you
    Selenium is required to run this script, Selenium is a browser automation framework that allows you to write automated tests for web applications. To install Selenium, run:
 
    ```bash
-   pip install -r selenium>=4.0.0
+   pip install selenium>=4.0.0
    ```
 
 ## Running the Script
