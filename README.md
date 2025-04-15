@@ -19,7 +19,6 @@ Before running the script, please ensure you have the following installed on you
 
    ```bash
    git clone https://github.com/Ach0ng2/Frame.io-Account-Generator
-   Frame.io-Account-Generator
    ```
 
 2. **Install Python Dependencies:**
