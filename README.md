@@ -60,4 +60,4 @@ If any errors occur during the process, a detailed error message and stack trace
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](LICENSE.txt).
