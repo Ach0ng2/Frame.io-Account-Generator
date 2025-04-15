@@ -23,19 +23,10 @@ Before running the script, please ensure you have the following installed on you
 
 2. **Install Python Dependencies:**
 
-   A `requirements.txt` file is provided for your convenience. To install the necessary libraries, run:
+   Selenium is required to run this script, Selenium is a browser automation framework that allows you to write automated tests for web applications. To install Selenium, run:
 
    ```bash
-   pip install -r requirements.txt
-   ```
-
-   The primary dependency is:
-   - `selenium`
-
-   You can create the `requirements.txt` with the following content if you haven't already:
-
-   ```txt
-   selenium>=4.0.0
+   pip install -r selenium>=4.0.0
    ```
 
 ## Running the Script
